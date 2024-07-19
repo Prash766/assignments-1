@@ -1,6 +1,23 @@
+// Middleware for handling auth
+
+const {User} = require('../db/index.js')
+
+
 function userMiddleware(req, res, next) {
-    // Implement user auth logic
-    // You need to check the headers and validate the user from the user DB. Check readme for the exact headers to be expected
+    const { username, password } = req.headers;
+    if (!username || !password) {
+        throw new Error("wrong inputs");
+    }
+    User.findOne({ username, password })
+        .then(user => {
+            if (!user) {
+                return res.status(403).json({ msg: "user doesn't exist" });
+            }
+            next();
+        })
+        .catch(err => {
+            res.status(500).json({ msg: "Internal server error" });
+        });
 }
 
 module.exports = userMiddleware;
